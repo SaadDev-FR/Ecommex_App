@@ -1,27 +1,12 @@
-// services/authService.js
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const Seller = require('../models/Seller');
-const Role = require('../models/role');
-const { 
-  SECRET_KEY, 
-  SENDER_EMAIL,
-  FRONTEND_BASE_URL,
-  EMAIL_USER,
-  EMAIL_PASSWORD,
-  EMAIL_HOST,
-  EMAIL_HOST_PORT
-} = require('../utils/constants');
+const Seller = require('../models/seller');
 
 const allSellers = async () => {
   try {
-    let user = await Seller.find();
+    const users = await Seller.find();
 
-    return { message: 'seller list', data:user };
+    return users;
   } catch (error) {
-    console.error(error);
-    throw new Error('seller list is empty');
+    throw new Error('Failed to retrieve seller: ' + error.message);
   }
 };
 

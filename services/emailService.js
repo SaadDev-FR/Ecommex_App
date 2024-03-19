@@ -29,8 +29,7 @@ async function sendEmail(to, subject, html) {
         return await transporter.sendMail(mailOptions);
 
     } catch (error) {
-        console.log(error);
-        throw new Error('Failed to send email');
+        throw new Error('Failed to send email: '+error.message);
     }
 
 }

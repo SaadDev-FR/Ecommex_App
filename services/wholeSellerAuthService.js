@@ -1,7 +1,5 @@
-// services/authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const WholeSeller = require('../models/wholeSeller');
 const Role = require('../models/role');
 const crypto = require('crypto');
@@ -23,10 +21,9 @@ const registerWholeSeller = async (wholeSeller) => {
     wholeSeller.roles = [role._id]
     const newUser = await WholeSeller.create(wholeSeller);
 
-    return { message: 'WholeSeller registered successfully', newUser };
+    return newUser;
   } catch (error) {
-    console.error(error);
-    throw new Error('Registration failed');
+    throw new Error('Failed to register: ' + error.message);
   }
 };
 
@@ -35,7 +32,7 @@ const loginWholeSeller = async (email, password) => {
     const wholeSeller = await WholeSeller.findOne({ email }).populate('roles');
 
     if (!wholeSeller) {
-      throw new Error('Invalid email or password');
+      throw new Error('No whole seller found.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, wholeSeller.password);
@@ -51,10 +48,9 @@ const loginWholeSeller = async (email, password) => {
 
     const token = jwt.sign({ wholeSellerId: wholeSeller._id, roles }, SECRET_KEY, { expiresIn: '1h' });
 
-    return { message: 'Login successful', token };
+    return token;
   } catch (error) {
-    console.error(error);
-    throw new Error('Login failed');
+    throw new Error('Failed to login: ' + error.message);
   }
 };
 
@@ -76,12 +72,9 @@ const sendPasswordResetEmail = async (email) => {
     const link = `${FRONTEND_BASE_URL}/auth/reset-password/${resetToken}`;
     const html = `<p>Click the following link to reset your password</p><a href=${link}>Click</a>`;
 
-    await sendEmail(email, subject, html);
-
-    return { message: 'Password reset email sent successfully' };
+    return await sendEmail(email, subject, html);
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to send password reset email');
+    throw new Error('Failed to send password reset email: ' + error.message);
   }
 };
 
@@ -93,9 +86,7 @@ const resetPassword = async (token, newPassword) => {
     const wholeSeller = await WholeSeller.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
 
     if (!wholeSeller) {
-      // return res.status(400).send('Invalid or expired reset link');
       throw new Error('Invalid or expired reset link');
-
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -106,8 +97,7 @@ const resetPassword = async (token, newPassword) => {
 
     return { message: 'Password reset successfully' };
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to reset password');
+    throw new Error('Failed to reset password: ' + error.message);
   }
 };
 

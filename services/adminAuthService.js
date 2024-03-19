@@ -1,7 +1,5 @@
-// services/authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const Admin = require('../models/admin');
 const Role = require('../models/role');
 const crypto = require('crypto');
@@ -21,12 +19,10 @@ const registerAdmin = async (admin) => {
     const hashedPassword = await bcrypt.hash(admin.password, 10);
     admin.password = hashedPassword;
     admin.roles = [role._id]
-    const newUser = await Admin.create(admin);
-
-    return { message: 'Admin registered successfully', newUser };
+     
+    return await Admin.create(admin);
   } catch (error) {
-    console.error(error);
-    throw new Error('Registration failed');
+    throw new Error('Failed to register: ' + error.message);
   }
 };
 
@@ -35,7 +31,7 @@ const loginAdmin = async (email, password) => {
     const admin = await Admin.findOne({ email }).populate('roles');
 
     if (!admin) {
-      throw new Error('Invalid email or password');
+      throw new Error('No seller found.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
@@ -51,10 +47,9 @@ const loginAdmin = async (email, password) => {
 
     const token = jwt.sign({ adminId: admin._id, roles }, SECRET_KEY, { expiresIn: '1h' });
 
-    return { message: 'Login successful', token };
+    return  token;
   } catch (error) {
-    console.error(error);
-    throw new Error('Login failed');
+    throw new Error('Failed to login: ' + error.message);
   }
 };
 
@@ -76,12 +71,9 @@ const sendPasswordResetEmail = async (email) => {
     const link = `${FRONTEND_BASE_URL}/auth/reset-password/${resetToken}`;
     const html = `<p>Click the following link to reset your password</p><a href=${link}>Click</a>`;
 
-    await sendEmail(email, subject, html);
-
-    return { message: 'Password reset email sent successfully' };
+    return await sendEmail(email, subject, html);
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to send password reset email');
+    throw new Error('Failed to send password reset email: ' + error.message);
   }
 };
 
@@ -102,12 +94,9 @@ const resetPassword = async (token, newPassword) => {
     admin.password = hashedPassword;
     admin.resetToken = '';
     admin.resetTokenExpiration = '';
-    await admin.save();
-
-    return { message: 'Password reset successfully' };
+    return await admin.save();
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to reset password');
+    throw new Error('Failed to reset password: ' + error.message);
   }
 };
 

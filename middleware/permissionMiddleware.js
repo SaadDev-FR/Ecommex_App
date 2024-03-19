@@ -16,7 +16,7 @@ const checkPermissions = (requiredRole) => {
     try {
       // Verify the token and extract user information
       const decoded = jwt.verify(token, SECRET_KEY);
-     
+
       // Check if the user has the required role
       if (decoded && decoded.roles && requiredRole.some(role => decoded.roles.includes(role))) {
 
@@ -25,11 +25,11 @@ const checkPermissions = (requiredRole) => {
         next();
       } else {
         // User does not have the required role, send a forbidden response
-        res.status(403).json({ message: 'Insufficient permissions' });
+        res.status(403).json({ success: false, message: 'Insufficient permissions' });
       }
     } catch (error) {
       console.error('Error in checkPermissions middleware:', error);
-      res.status(401).json({ message: 'Unauthorized - Invalid token' });
+      res.status(401).json({ success: false, message: 'Unauthorized - Invalid token' });
     }
   };
 };

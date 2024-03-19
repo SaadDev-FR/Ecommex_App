@@ -1,8 +1,7 @@
-// services/authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const Seller = require('../models/Seller');
+const Seller = require('../models/seller');
 const Role = require('../models/role');
 const crypto = require('crypto');
 const { sendEmail } = require('./emailService')
@@ -23,10 +22,9 @@ const registerSeller = async (seller) => {
     seller.roles = [role._id]
     const newSeller = await Seller.create(seller);
 
-    return { message: 'Seller registered successfully', newSeller };
+    return newSeller;
   } catch (error) {
-    console.error(error);
-    throw new Error('Registration failed');
+    throw new Error('Failed to register: ' + error.message);
   }
 };
 
@@ -35,7 +33,7 @@ const loginSeller = async (email, password) => {
     const seller = await Seller.findOne({ email }).populate('roles');
 
     if (!seller) {
-      throw new Error('Invalid email or password');
+      throw new Error('No seller found.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, seller.password);
@@ -51,10 +49,9 @@ const loginSeller = async (email, password) => {
 
     const token = jwt.sign({ sellerId: seller._id, roles }, SECRET_KEY, { expiresIn: '1h' });
 
-    return { message: 'Login successful', token };
+    return token;
   } catch (error) {
-    console.error(error);
-    throw new Error('Login failed');
+    throw new Error('Failed to login: ' + error.message);
   }
 };
 
@@ -80,8 +77,7 @@ const sendPasswordResetEmail = async (email) => {
 
     return { message: 'Password reset email sent successfully' };
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to send password reset email');
+    throw new Error('Failed to send password reset email: ' + error.message);
   }
 };
 
@@ -93,7 +89,6 @@ const resetPassword = async (token, newPassword) => {
     const seller = await Seller.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
 
     if (!seller) {
-      // return res.status(400).send('Invalid or expired reset link');
       throw new Error('Invalid or expired reset link');
 
     }
@@ -106,8 +101,7 @@ const resetPassword = async (token, newPassword) => {
 
     return { message: 'Password reset successfully' };
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to reset password');
+    throw new Error('Failed to reset password: ' + error.message);
   }
 };
 

@@ -11,34 +11,31 @@ const registerAdmin = async (req, res) => {
     }
     admin.roleName="admin";
     const result = await adminAuthService.registerAdmin(admin);
-    res.status(201).json(result.message);
+    res.status(201).json({success: true,message: 'Admin registered successfully',admin:result});
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(400).json({ success: false, message: error.message});
   }
 };
 
 const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await adminAuthService.loginAdmin(email, password);
+    const token = await adminAuthService.loginAdmin(email, password);
 
-    res.status(200).json(result);
+    res.status(200).json({success:true, message: 'Login successful', token});
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: 'Invalid email or password' });
+    res.status(400).json({success: false, message: error.message});
   }
 };
 
 const sendPasswordResetEmail = async (req, res) => {
   try {
     const { email } = req.body;
-    const result = await adminAuthService.sendPasswordResetEmail(email);
+    await adminAuthService.sendPasswordResetEmail(email);
 
-    res.status(200).json(result);
+    res.status(200).json({success:true, message: 'Password reset email sent successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(400).json({success: false, message: error.message });
   }
 };
 
@@ -47,10 +44,9 @@ const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
     const result = await adminAuthService.resetPassword(token, newPassword);
 
-    res.status(200).json(result);
+    res.status(200).json({success:true, message: 'Password reset successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: 'Invalid token or failed to reset password' });
+    res.status(400).json({success: false, message: error.message});
   }
 };
 
