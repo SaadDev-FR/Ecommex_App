@@ -28,7 +28,6 @@ const checkPermissions = (requiredRole) => {
         res.status(403).json({ success: false, message: 'Insufficient permissions' });
       }
     } catch (error) {
-      console.error('Error in checkPermissions middleware:', error);
       res.status(401).json({ success: false, message: 'Unauthorized - Invalid token' });
     }
   };

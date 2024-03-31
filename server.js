@@ -7,6 +7,7 @@ const { PORT} = require('./utils/constants')
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoute = require('./routes/productRoute');
+const categoryRoute = require('./routes/categoryRoute');
 const db = require('./config/database');
 
 db.connectDB();
@@ -21,6 +22,7 @@ app.use(cors());
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/products', productRoute);
+app.use('/categories', categoryRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

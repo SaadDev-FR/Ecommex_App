@@ -26,7 +26,7 @@ const productSchema = Schema(
                 'Sold Out', 'Hidden', 'Unpublished'
             ]
         },
-        category: {
+        categoryId: {
             type: Schema.Types.ObjectId, ref: 'Category'
         },
         minimumOrder:{
@@ -35,7 +35,7 @@ const productSchema = Schema(
             min: 1
         },
         createdBy: {
-            type: Schema.Types.ObjectId
+            type: Schema.Types.ObjectId, ref: 'WholeSeller'
         },
         updatedBy: {
             type: Schema.Types.ObjectId

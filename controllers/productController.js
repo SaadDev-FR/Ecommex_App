@@ -3,7 +3,7 @@ const productService = require('../services/productService');
 const create = async (req, res, next) => {
   try {
     const data = req.body
-    const { name, price, category } = data;
+    const { name, price, categoryId } = data;
 
     const result = await productService.create(req, res, next);
 

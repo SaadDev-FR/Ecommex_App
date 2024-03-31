@@ -7,13 +7,6 @@ const create = async (req, res, next) => {
   try {
     const data = req.body
 
-    let category = await Category.findOne({ name: data.category });
-    if (!category) {
-      category = (await Category.create({ name: data.category }));
-    }
-
-    data.category = category;
-
     // Example ObjectId values
     const pattern = /id/i;
     const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
@@ -133,7 +126,20 @@ const getAllProducts = async (req, res, next) => {
 
     // const productsWithConvertedPrices = await Product.aggregate(pipeline);
 
-    return await Product.find().populate('category');
+    const query = {};
+    if (req.query.createdBy) {
+      query.createdBy = req.query.createdBy
+    }
+
+    return await Product.find(query)
+      .populate({
+        path: 'categoryId',
+        select: 'name'
+      })
+      .populate({
+        path: 'createdBy',
+        select: 'businessName'
+      });
 
   } catch (error) {
     throw new Error('Failed to retrieve products: ' + error.message);
@@ -143,7 +149,15 @@ const getAllProducts = async (req, res, next) => {
 const getProductbyId = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const product = await Product.findById(id).populate('category');
+    const product = await Product.findById(id)
+      .populate({
+        path: 'categoryId',
+        select: 'name'
+      })
+      .populate({
+        path: 'createdBy',
+        select: 'businessName'
+      });
 
     if (!product) {
       throw new Error('Product not Found')
