@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { MONGODB_URI } = require('../utils/constants');
+const mongoose = require("mongoose");
+const { MONGODB_URI } = require("../utils/constants");
 
 const connectDB = async () => {
   try {
@@ -8,10 +8,10 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log(`MongoDB connected: ${conn}`);
+    console.log(`MongoDB Connected: ${conn}`);
   } catch (err) {
     console.error(err);
     process.exit(1);
   }
 };
-module.exports={connectDB}
+module.exports = { connectDB };
