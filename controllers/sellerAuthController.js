@@ -1,17 +1,25 @@
-const sellerAuthService = require('../services/sellerAuthService');
+const sellerAuthService = require("../services/sellerAuthService");
 
 const registerSeller = async (req, res) => {
   try {
-    const seller = req.body
-    const { firstName, lastName, email, mobile, password, confirmPassword } = seller;
+    const seller = req.body;
+    const { firstName, lastName, email, mobile, password, confirmPassword } =
+      seller;
 
     // Check if password and confirmPassword match
     if (password !== confirmPassword) {
-      return res.status(400).json({ success: false, message: 'Password and Confirm Password do not match' });
+      return res.status(400).json({
+        success: false,
+        message: "Password and Confirm Password does not match",
+      });
     }
     seller.roleName = "seller";
     const result = await sellerAuthService.registerSeller(seller);
-    res.status(201).json({success: true,message: 'Seller registered successfully',seller:result});
+    res.status(201).json({
+      success: true,
+      message: "Seller Registered Successfully",
+      seller: result,
+    });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -20,9 +28,14 @@ const registerSeller = async (req, res) => {
 const loginSeller = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const token = await sellerAuthService.loginSeller(email, password);
+    const { user, token } = await sellerAuthService.loginSeller(
+      email,
+      password
+    );
 
-    res.status(200).json({success:true, message: 'Login successful', token});
+    res
+      .status(200)
+      .json({ success: true, message: "Login Successful", user, token });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -31,9 +44,12 @@ const loginSeller = async (req, res) => {
 const sendPasswordResetEmail = async (req, res) => {
   try {
     const { email } = req.body;
-   await sellerAuthService.sendPasswordResetEmail(email);
+    await sellerAuthService.sendPasswordResetEmail(email);
 
-    res.status(200).json({success:true, message: 'Password reset email sent successfully' });
+    res.status(200).json({
+      success: true,
+      message: "Password Reset Email Sent Successfully",
+    });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -44,9 +60,11 @@ const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
     await sellerAuthService.resetPassword(token, newPassword);
 
-    res.status(200).json({success:true, message: 'Password reset successfully' });
+    res
+      .status(200)
+      .json({ success: true, message: "Password Reset Successfully" });
   } catch (error) {
-    res.status(400).json({success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 

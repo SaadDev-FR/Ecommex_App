@@ -1,15 +1,16 @@
-const Product = require('../models/product');
-const mongoose = require('mongoose');
-const Category = require('../models/category');
-
+const Product = require("../models/product");
+const mongoose = require("mongoose");
+const Category = require("../models/category");
 
 const create = async (req, res, next) => {
   try {
-    const data = req.body
+    const data = req.body;
 
     // Example ObjectId values
     const pattern = /id/i;
-    const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
+    const keysContainingId = Object.keys(req.user).filter((key) =>
+      pattern.test(key)
+    );
 
     data.createdBy = req.user[keysContainingId];
 
@@ -17,22 +18,18 @@ const create = async (req, res, next) => {
 
     return products;
   } catch (error) {
-    throw new Error('Failt to Add Product: ' + error.message);
+    throw new Error("Failt to Add Product: " + error.message);
   }
 };
 
 const getAllProducts = async (req, res, next) => {
-
   try {
-
     // const query = {
     //   newCurrency: "EUR",
     //   conversionRates: {
     //     'USD': 1, // Example conversion rate from USD to USD (1:1)
     //     'EUR': 0.84 // Example conversion rate from USD to EUR
     //   },
-
-
 
     //   // if discount return discounted amount
     //   discount: true,
@@ -105,8 +102,6 @@ const getAllProducts = async (req, res, next) => {
     //     currency: query.newCurrency ? query.newCurrency : '$price.currency'
     //   }
 
-
-
     //   // projections
     //   if (query.projection) {
     //     pipeline.push({
@@ -128,58 +123,56 @@ const getAllProducts = async (req, res, next) => {
 
     const query = {};
     if (req.query.createdBy) {
-      query.createdBy = req.query.createdBy
+      query.createdBy = req.query.createdBy;
     }
 
     return await Product.find(query)
       .populate({
-        path: 'categoryId',
-        select: 'name'
+        path: "categoryId",
+        select: "name",
       })
       .populate({
-        path: 'createdBy',
-        select: 'businessName'
+        path: "createdBy",
+        select: "businessName",
       });
-
   } catch (error) {
-    throw new Error('Failed to retrieve products: ' + error.message);
+    throw new Error("Failed to retrieve products: " + error.message);
   }
-}
+};
 
 const getProductbyId = async (req, res, next) => {
   try {
     const id = req.params.id;
     const product = await Product.findById(id)
       .populate({
-        path: 'categoryId',
-        select: 'name'
+        path: "categoryId",
+        select: "name",
       })
       .populate({
-        path: 'createdBy',
-        select: 'businessName'
+        path: "createdBy",
+        select: "businessName",
       });
 
     if (!product) {
-      throw new Error('Product not Found')
+      throw new Error("Product not Found");
     }
 
     return product;
   } catch (error) {
-    throw new Error('Failed to retrieve products: ' + error.message);
-
+    throw new Error("Failed to retrieve products: " + error.message);
   }
-}
-
-
+};
 
 const updateProduct = async (req, res, next) => {
   try {
-    const id = req.params.id
+    const id = req.params.id;
     const data = req.body;
 
     // Example ObjectId values
     const pattern = /id/i;
-    const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
+    const keysContainingId = Object.keys(req.user).filter((key) =>
+      pattern.test(key)
+    );
 
     data.updatedBy = req.user[keysContainingId];
 
@@ -190,17 +183,14 @@ const updateProduct = async (req, res, next) => {
     }
 
     return product;
-
   } catch (error) {
-    throw new Error('Failed to update product: ' + error.message);
-
+    throw new Error("Failed to update product: " + error.message);
   }
-
-}
+};
 
 const deleteProduct = async (req, res, next) => {
   try {
-    const id = req.params.id
+    const id = req.params.id;
 
     // Check if the product exists
     const product = await Product.findById(id);
@@ -210,19 +200,15 @@ const deleteProduct = async (req, res, next) => {
 
     // Delete the product
     return await Product.findByIdAndDelete(id);
-
   } catch (error) {
-    throw new Error('Failed to Delete: ' + error.message);
-
+    throw new Error("Failed to Delete: " + error.message);
   }
-
-}
-
+};
 
 module.exports = {
   getAllProducts,
   getProductbyId,
   create,
   updateProduct,
-  deleteProduct
+  deleteProduct,
 };

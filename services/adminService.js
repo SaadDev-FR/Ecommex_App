@@ -1,4 +1,4 @@
-const Seller = require('../models/seller');
+const Seller = require("../models/seller");
 
 const allSellers = async () => {
   try {
@@ -6,10 +6,10 @@ const allSellers = async () => {
 
     return users;
   } catch (error) {
-    throw new Error('Failed to retrieve seller: ' + error.message);
+    throw new Error("Failed to retrieve seller: " + error.message);
   }
 };
 
 module.exports = {
-  allSellers
+  allSellers,
 };

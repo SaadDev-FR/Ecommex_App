@@ -1,14 +1,14 @@
-const jwt = require('jsonwebtoken');
-const { SECRET_KEY } = require('../utils/constants');
-const Sellers = require('../models/seller.js');
-const Admin = require('../models/admin.js');
-const WholeSeller = require('../models/wholeSeller.js');
+const jwt = require("jsonwebtoken");
+const { SECRET_KEY } = require("../utils/constants");
+const Sellers = require("../models/seller.js");
+const Admin = require("../models/admin.js");
+const WholeSeller = require("../models/wholeSeller.js");
 
 const authenticateUser = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
+    const token = req.header("Authorization").replace("Bearer ", "");
     const decoded = jwt.verify(token, SECRET_KEY);
-    let user = null
+    let user = null;
 
     if (decoded.adminId) {
       user = await Admin.findOne({ _id: decoded.adminId });
@@ -26,7 +26,9 @@ const authenticateUser = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ success: false, message: 'Please authenticate: ' +  error });
+    res
+      .status(401)
+      .json({ success: false, message: "Please authenticate: " + error });
   }
 };
 
