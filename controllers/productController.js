@@ -65,10 +65,57 @@ const deleteProduct = async (req, res,next) => {
   }
 }
 
+// product review
+
+const createReview = async (req, res, next) => {
+  try {
+    const data = req.body
+    const { user, comment } = data;
+
+    const result = await productService.createReview(req, res, next);
+
+    res.status(201).json({ success: true, message: 'Review added successfully', product: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+
+const getAllReviewsByProductId = async (req, res, next) => {
+  try {
+
+    const result = await productService.getAllReviewsByProductId(req,res,next);
+
+    res.status(200).json(
+      {
+        success: true,
+        message: 'Reviews retrieved successfully.',
+        total: result.length,
+        product: result
+      });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const getReviewbyId = async (req, res, next) => {
+  try {
+
+    const result = await productService.getReviewbyId(req,res,next);
+
+    res.status(200).json({ success: true, message: 'Review retrieved successfully.', review: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
   create,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  createReview,
+  getAllReviewsByProductId,
+  getReviewbyId
 };

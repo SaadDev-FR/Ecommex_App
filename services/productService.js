@@ -1,14 +1,16 @@
 const Product = require('../models/product');
 const mongoose = require('mongoose');
 const Category = require('../models/category');
+const ProductReview = require('../models/productReview');
+const product = require('../models/product');
 
 
 const create = async (req, res, next) => {
   try {
     const data = req.body
-    const images = req.files.map(file => file.path);
+    const images = req.files.map(file => file.filename);
 
-    data.images=images
+    data.images = images
 
     // Example ObjectId values
     const pattern = /id/i;
@@ -134,7 +136,7 @@ const getAllProducts = async (req, res, next) => {
       query.createdBy = req.query.createdBy
     }
 
-    return await Product.find(query)
+    const products = await Product.find(query)
       .populate({
         path: 'categoryId',
         select: 'name'
@@ -143,6 +145,14 @@ const getAllProducts = async (req, res, next) => {
         path: 'createdBy',
         select: 'businessName'
       });
+
+
+    return products.map(product => {
+      const imagesWithUrls = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`)
+      product.images = imagesWithUrls;
+      return product
+    });
+
 
   } catch (error) {
     throw new Error('Failed to retrieve products: ' + error.message);
@@ -160,13 +170,18 @@ const getProductbyId = async (req, res, next) => {
       .populate({
         path: 'createdBy',
         select: 'businessName'
+      })
+      .populate({
+        path: 'reviews',
+        populate: { path: 'user', select: ['firstName', 'lastName'] }
       });
 
     if (!product) {
       throw new Error('Product not Found')
     }
 
-    return product;
+    product.images = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`);
+    return product
   } catch (error) {
     throw new Error('Failed to retrieve products: ' + error.message);
 
@@ -185,10 +200,11 @@ const updateProduct = async (req, res, next) => {
     const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
 
     data.updatedBy = req.user[keysContainingId];
-    const images = req.files.map(file => file.path);
+    const images = req.files.map(file => file.filename);
 
-    if(images.length>0){
-      data.images=images
+
+    if (images.length > 0) {
+      data.images = images
     }
 
     const product = await Product.findByIdAndUpdate(id, data, { new: true });
@@ -196,6 +212,7 @@ const updateProduct = async (req, res, next) => {
     if (!product) {
       throw new Error("product not found");
     }
+    product.images = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`);
 
     return product;
 
@@ -226,11 +243,86 @@ const deleteProduct = async (req, res, next) => {
 
 }
 
+// product reviews
+
+const createReview = async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body;
+
+    const productId = req.params.productId
+
+    // Check if the product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Create a new review
+    const newReview = new ProductReview({
+      user: req.user.id,
+      rating,
+      comment
+    });
+
+    // Save the review
+    await newReview.
+      save();
+
+    // Add the review to the product's reviews array
+    product.reviews.push(newReview);
+    await product.save();
+
+    return product;
+  } catch (error) {
+    throw new Error('Failt to Add Review: ' + error.message);
+  }
+};
+
+const getAllReviewsByProductId = async (req, res, next) => {
+  try {
+
+    const { productId } = req.params
+
+    return await Product.findById(productId).select('reviews').populate('reviews');
+
+  } catch (error) {
+    throw new Error('Failed to retrieve reviews: ' + error.message);
+  }
+}
+
+const getReviewbyId = async (req, res, next) => {
+  try {
+    const { productId, reviewId } = req.params;
+    const product = await Product.findById(productId).populate('reviews');
+
+
+    if (!product) {
+      throw new Error('review not Found')
+    }
+
+    // Find the specific review within the reviews array by its ID
+    const review = product.reviews.find(review => review._id.toString() === reviewId);
+
+    if (!review) {
+      throw new Error('review not Found')
+    }
+
+
+    return review;
+  } catch (error) {
+    throw new Error('Failed to retrieve review: ' + error.message);
+
+  }
+}
+
 
 module.exports = {
   getAllProducts,
   getProductbyId,
   create,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getAllReviewsByProductId,
+  getReviewbyId,
+  createReview
 };

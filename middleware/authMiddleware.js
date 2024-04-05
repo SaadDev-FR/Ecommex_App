@@ -17,7 +17,7 @@ const authenticateUser = async (req, res, next) => {
     } else if (decoded.wholeSellerId) {
       user = await WholeSeller.findOne({ _id: decoded.wholeSellerId });
     }
-
+    
     if (!user) {
       throw new Error();
     }

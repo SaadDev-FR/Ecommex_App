@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
       cb(null, 'public/images/product'); // Upload files to the 'uploads' directory
   },
   filename: function(req, file, cb) {
-      cb(null, file.originalname);
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
   }
 });
 
@@ -36,6 +36,12 @@ app.use(upload.any());
 
 
 app.use(cors());
+
+// Define a middleware to set the base URL
+app.use((req, res, next) => {
+  res.locals.imagesBaseUrl = req.protocol + '://' + req.get('host') + '/images/product';
+  next();
+});
 
 app.use('/images/product', express.static(path.join(__dirname, 'public/images/product')));
 
