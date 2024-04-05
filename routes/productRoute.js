@@ -11,8 +11,13 @@ const router = express.Router();
 router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
 
+router.get('/:productId/review', productController.getAllReviewsByProductId);
+router.get('/:productId/review/:reviewId', productController.getReviewbyId);
+
 // Protect the route with authentication middleware
 router.use(authenticateUser);
+
+router.post('/:productId/review', productController.createReview);
 
 // rcorbPermisssion: only resource-creater (e.g whole seller) or admin can delete product
 router.delete('/:id', rcorbPermisssion(['admin'],'Product'), productController.deleteProduct);

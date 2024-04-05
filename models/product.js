@@ -29,11 +29,16 @@ const productSchema = Schema(
         categoryId: {
             type: Schema.Types.ObjectId, ref: 'Category'
         },
-        minimumOrder:{
+        minimumOrder: {
             type: Number,
-            default:1,
+            default: 1,
             min: 1
         },
+        reviews: [{
+            type: Schema.Types.ObjectId,
+            ref: 'ProductReview'
+        }],
+
         createdBy: {
             type: Schema.Types.ObjectId, ref: 'WholeSeller'
         },
@@ -43,7 +48,7 @@ const productSchema = Schema(
     },
     {
         timestamps: true
-    }   
+    }
 );
 
 productSchema.virtual('payableAmount').get(function () {
