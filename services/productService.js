@@ -283,7 +283,12 @@ const getAllReviewsByProductId = async (req, res, next) => {
 
     const { productId } = req.params
 
-    return await Product.findById(productId).select('reviews').populate('reviews');
+    return await Product.findById(productId)
+      .select('reviews')
+      .populate({
+        path:'reviews',
+        populate: ({path:'user', select: ['firstName','lastName']})
+      });
 
   } catch (error) {
     throw new Error('Failed to retrieve reviews: ' + error.message);
@@ -293,7 +298,11 @@ const getAllReviewsByProductId = async (req, res, next) => {
 const getReviewbyId = async (req, res, next) => {
   try {
     const { productId, reviewId } = req.params;
-    const product = await Product.findById(productId).populate('reviews');
+    const product = await Product.findById(productId)
+    .populate({
+      path:'reviews',
+      populate: ({path:'user', select: ['firstName','lastName']})
+    });;
 
 
     if (!product) {
