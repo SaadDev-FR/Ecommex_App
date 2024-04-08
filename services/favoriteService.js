@@ -7,11 +7,7 @@ const addToFavorite = async (req, res, next) => {
   try {
     const { productId } = req.body
 
-    // Example ObjectId values
-    const pattern = /id/i;
-    const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
-
-    const userId = req.user[keysContainingId];
+    const userId = req.user.id;
 
     const favorite = await Favorite.findOne({ userId });
 
@@ -39,13 +35,17 @@ const addToFavorite = async (req, res, next) => {
 
 const getAllFavoriteByUserId = async (req, res, next) => {
   try {
-    // Example ObjectId values
-    const pattern = /id/i;
-    const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
+   
+     const userId = req.user.id;
 
-    const userId = req.user[keysContainingId];
+    const favorite = await Favorite.findOne({ userId }).populate('products');
+    favorite.products = favorite.products.map(product => {
+      const imagesWithUrls = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`)
+      product.images = imagesWithUrls;
+      return product
+    })
 
-    return await Favorite.findOne({ userId }).populate('products');
+    return favorite
 
   } catch (error) {
     throw new Error('Failed to retrieve Favorites: ' + error.message);
@@ -57,11 +57,8 @@ const removeFromFavorite = async (req, res, next) => {
   try {
     const { productId } = req.body
 
-    // Example ObjectId values
-    const pattern = /id/i;
-    const keysContainingId = Object.keys(req.user).filter(key => pattern.test(key));
-
-    const userId = req.user[keysContainingId];
+    
+    const userId = req.user.id;
 
     const favorite = await Favorite.findOne({userId});
 
