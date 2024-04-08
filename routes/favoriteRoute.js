@@ -10,8 +10,6 @@ const router = express.Router();
 router.use(authenticateUser);
 
 router.post('/', favoriteController.addToFavorite);
-
-router.use(actionPermissions('Favorite'))
 router.get('/', favoriteController.getAllFavoriteByUserId);
 router.put('/', favoriteController.removeFromFavorite);
 
