@@ -3,9 +3,13 @@ const { authenticateUser } = require('../middleware/authMiddleware');
 const { checkPermissions } = require('../middleware/permissionMiddleware');
 const { actionPermissions } = require('../middleware/actionsPermission');
 const { rcorbPermisssion } = require('../middleware/hybridPermissionMiddlewaew');
+const { checkSubscription } = require('../middleware/subscriptionMiddleware');
+
 const productController = require('../controllers/productController');
 
 const router = express.Router();
+
+router.get('/top-trending', authenticateUser,checkSubscription, productController.getTrendingProduct);
 
 // public routes
 router.get('/', productController.getAllProducts);
@@ -20,7 +24,7 @@ router.use(authenticateUser);
 router.post('/:productId/review', productController.createReview);
 
 // rcorbPermisssion: only resource-creater (e.g whole seller) or admin can delete product
-router.delete('/:id', rcorbPermisssion(['admin'],'Product'), productController.deleteProduct);
+router.delete('/:id', rcorbPermisssion(['admin'], 'Product'), productController.deleteProduct);
 
 router.use(checkPermissions(['wholeSeller']));
 router.post('/', productController.create);

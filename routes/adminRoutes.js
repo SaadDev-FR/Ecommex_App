@@ -9,6 +9,8 @@ const router = express.Router();
 router.use(authenticateUser);
 
 // Use role-based permission middleware for specific routes
-router.get('/all-sellers', checkPermissions(['admin']), adminController.allUser);
+router.get('/all-sellers', checkPermissions(['admin']), adminController.allSeller);
+router.get('/all-whole-sellers', checkPermissions(['admin']), adminController.allWholeSeller);
+
 
 module.exports = router;

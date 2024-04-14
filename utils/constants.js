@@ -18,6 +18,12 @@ const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL
 // Other constants
 const PORT = process.env.PORT || 3000;
 
+const HOST = process.env.HOST || "http://localhost"
+
+// Stripe
+const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
+
 module.exports = {
   MONGODB_URI,
   SECRET_KEY,
@@ -27,5 +33,8 @@ module.exports = {
   EMAIL_PASSWORD,
   SENDER_EMAIL,
   PORT,
-  FRONTEND_BASE_URL
+  FRONTEND_BASE_URL,
+  STRIPE_PUBLISHABLE_KEY,
+  STRIPE_SECRET_KEY,
+  HOST
 };

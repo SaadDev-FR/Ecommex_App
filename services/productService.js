@@ -2,7 +2,10 @@ const Product = require('../models/product');
 const mongoose = require('mongoose');
 const Category = require('../models/category');
 const ProductReview = require('../models/productReview');
-const product = require('../models/product');
+const Favorite = require('../models/favorite');
+const notificationService = require('../services/notificationService');
+const Order = require('../models/order');
+
 
 
 const create = async (req, res, next) => {
@@ -146,13 +149,7 @@ const getAllProducts = async (req, res, next) => {
         select: 'businessName'
       });
 
-
-    return products.map(product => {
-      const imagesWithUrls = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`)
-      product.images = imagesWithUrls;
-      return product
-    });
-
+    return products
 
   } catch (error) {
     throw new Error('Failed to retrieve products: ' + error.message);
@@ -180,7 +177,6 @@ const getProductbyId = async (req, res, next) => {
       throw new Error('Product not Found')
     }
 
-    product.images = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`);
     return product
   } catch (error) {
     throw new Error('Failed to retrieve products: ' + error.message);
@@ -189,6 +185,69 @@ const getProductbyId = async (req, res, next) => {
 }
 
 
+const getTrendingProduct = async (req, res, next) => {
+  try {
+    // Calculate weightage for each factor (adjust as needed)
+    const reviewWeight = 0.4;
+    const ratingWeight = 0.3;
+    const saleWeight = 0.3;
+
+    let limit=10
+    if(req.query.limit){
+      limit =req.query.limit
+    }
+
+    const orders = await Order.find().populate('products.productId');
+
+    // Calculate score for each product
+    const productScores = {};
+    orders.forEach(order => {
+      order.products.forEach(product => {
+        const productId = product.productId._id.toString();
+        if (!productScores[productId]) {
+          productScores[productId] = {
+            reviewCount: 0,
+            totalRating: 0,
+            saleCount: 0
+          };
+        }
+        productScores[productId].saleCount += product.quantity;
+      });
+    });
+
+     // Find all product reviews and calculate total ratings and review counts
+     const productReviews = await ProductReview.find();
+     productReviews.forEach(review => {
+       const productId = review?.productId?.toString();
+       if (productScores[productId]) {
+         productScores[productId].totalRating += review.rating;
+         productScores[productId].reviewCount++;
+       }
+     });
+
+       // Calculate score for each product
+    const trendingProducts = [];
+    for (const productId in productScores) {
+      const { reviewCount, totalRating, saleCount } = productScores[productId];
+      const averageRating = reviewCount > 0 ? totalRating / reviewCount : 0;
+      const score = (reviewCount * reviewWeight) + (averageRating * ratingWeight) + (saleCount * saleWeight);
+      trendingProducts.push({ productId, score });
+    }
+
+    // Sort products by score in descending order
+    trendingProducts.sort((a, b) => b.score - a.score);
+
+    // Limit the number of trending products
+    const topTrendingProductIds = trendingProducts.slice(0, limit).map(item => item.productId);
+
+    const topTrendingProducts = await Product.find({ _id: { $in: topTrendingProductIds } }).populate('reviews');
+
+    return topTrendingProducts
+  } catch (error) {
+    throw new Error('Failed to retrieve products: ' + error.message);
+
+  }
+}
 
 const updateProduct = async (req, res, next) => {
   try {
@@ -207,12 +266,20 @@ const updateProduct = async (req, res, next) => {
       data.images = images
     }
 
+    // send notigication
+    if(data.discountInPercent> 0){
+       const favorites = await Favorite.find({products: id},{userId:1})
+       if(favorites){
+        const recipients = favorites.map(user=>user.userId)
+        await notificationService.sendNotification(recipients, `product: ${id} is on sale`)
+       }
+    }
+
     const product = await Product.findByIdAndUpdate(id, data, { new: true });
 
     if (!product) {
       throw new Error("product not found");
     }
-    product.images = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`);
 
     return product;
 
@@ -286,8 +353,8 @@ const getAllReviewsByProductId = async (req, res, next) => {
     return await Product.findById(productId)
       .select('reviews')
       .populate({
-        path:'reviews',
-        populate: ({path:'user', select: ['firstName','lastName']})
+        path: 'reviews',
+        populate: ({ path: 'user', select: ['firstName', 'lastName'] })
       });
 
   } catch (error) {
@@ -299,10 +366,10 @@ const getReviewbyId = async (req, res, next) => {
   try {
     const { productId, reviewId } = req.params;
     const product = await Product.findById(productId)
-    .populate({
-      path:'reviews',
-      populate: ({path:'user', select: ['firstName','lastName']})
-    });;
+      .populate({
+        path: 'reviews',
+        populate: ({ path: 'user', select: ['firstName', 'lastName'] })
+      });;
 
 
     if (!product) {
@@ -328,6 +395,7 @@ const getReviewbyId = async (req, res, next) => {
 module.exports = {
   getAllProducts,
   getProductbyId,
+  getTrendingProduct,
   create,
   updateProduct,
   deleteProduct,

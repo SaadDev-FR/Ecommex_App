@@ -39,11 +39,6 @@ const getAllFavoriteByUserId = async (req, res, next) => {
      const userId = req.user.id;
 
     const favorite = await Favorite.findOne({ userId }).populate('products');
-    favorite.products = favorite.products.map(product => {
-      const imagesWithUrls = product.images.map(image => `${res.locals.imagesBaseUrl}/${image}`)
-      product.images = imagesWithUrls;
-      return product
-    })
 
     return favorite
 
