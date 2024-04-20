@@ -55,13 +55,13 @@ const productSchema = Schema(
 // Define a pre-find hook to add base URL to each image URL
 productSchema.post('find', function (docs) {
     docs.forEach(product => {
-        const imagesWithUrls = product.images.map(image => `${HOST}:${PORT}/${image}`)
+        const imagesWithUrls = product.images.map(image => `${HOST}:${PORT}/images/product/${image}`)
         product.images = imagesWithUrls;
     });
 });
 
 productSchema.post('findOne', function(doc) {
-      doc.images = doc.images.map(image => `${HOST}:${PORT}/${image}`)
+      doc.images = doc.images.map(image => `${HOST}:${PORT}/images/product/${image}`)
   });
 
 

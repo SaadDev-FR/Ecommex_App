@@ -351,7 +351,6 @@ const getAllReviewsByProductId = async (req, res, next) => {
     const { productId } = req.params
 
     return await Product.findById(productId)
-      .select('reviews')
       .populate({
         path: 'reviews',
         populate: ({ path: 'user', select: ['firstName', 'lastName'] })
