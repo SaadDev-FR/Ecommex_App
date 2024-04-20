@@ -192,9 +192,9 @@ const getTrendingProduct = async (req, res, next) => {
     const ratingWeight = 0.3;
     const saleWeight = 0.3;
 
-    let limit=10
-    if(req.query.limit){
-      limit =req.query.limit
+    let limit = 10
+    if (req.query.limit) {
+      limit = req.query.limit
     }
 
     const orders = await Order.find().populate('products.productId');
@@ -215,17 +215,17 @@ const getTrendingProduct = async (req, res, next) => {
       });
     });
 
-     // Find all product reviews and calculate total ratings and review counts
-     const productReviews = await ProductReview.find();
-     productReviews.forEach(review => {
-       const productId = review?.productId?.toString();
-       if (productScores[productId]) {
-         productScores[productId].totalRating += review.rating;
-         productScores[productId].reviewCount++;
-       }
-     });
+    // Find all product reviews and calculate total ratings and review counts
+    const productReviews = await ProductReview.find();
+    productReviews.forEach(review => {
+      const productId = review?.productId?.toString();
+      if (productScores[productId]) {
+        productScores[productId].totalRating += review.rating;
+        productScores[productId].reviewCount++;
+      }
+    });
 
-       // Calculate score for each product
+    // Calculate score for each product
     const trendingProducts = [];
     for (const productId in productScores) {
       const { reviewCount, totalRating, saleCount } = productScores[productId];
@@ -267,12 +267,12 @@ const updateProduct = async (req, res, next) => {
     }
 
     // send notigication
-    if(data.discountInPercent> 0){
-       const favorites = await Favorite.find({products: id},{userId:1})
-       if(favorites){
-        const recipients = favorites.map(user=>user.userId)
+    if (data.discountInPercent > 0) {
+      const favorites = await Favorite.find({ products: id }, { userId: 1 })
+      if (favorites) {
+        const recipients = favorites.map(user => user.userId)
         await notificationService.sendNotification(recipients, `product: ${id} is on sale`)
-       }
+      }
     }
 
     const product = await Product.findByIdAndUpdate(id, data, { new: true });
@@ -336,10 +336,11 @@ const createReview = async (req, res, next) => {
       save();
 
     // Add the review to the product's reviews array
-    product.reviews.push(newReview);
-    await product.save();
-
-    return product;
+    return await Product.findByIdAndUpdate(
+      productId,
+      { reviews: [...product.reviews, newReview] },
+      { new: true }
+    );
   } catch (error) {
     throw new Error('Failt to Add Review: ' + error.message);
   }
