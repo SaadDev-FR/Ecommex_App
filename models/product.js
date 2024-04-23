@@ -69,6 +69,14 @@ productSchema.virtual('payableAmount').get(function () {
     return this.price.amount - (this.price.amount * this.discountInPercent / 100);
 });
 
+productSchema.virtual('averageRating').get(function() {
+    if (this.reviews && this.reviews.length > 0) {
+      const totalRating = this.reviews.reduce((acc, review) => acc + review.rating, 0);
+      return totalRating / this.reviews.length;
+    }
+    return 0; // Return 0 if no reviews are available
+  });
+
 
 productSchema.set('toJSON', { virtuals: true });
 
