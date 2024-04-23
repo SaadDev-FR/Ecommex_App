@@ -266,19 +266,19 @@ const updateProduct = async (req, res, next) => {
       data.images = images
     }
 
+    const product = await Product.findByIdAndUpdate(id, data, { new: true });
+    
+    if (!product) {
+      throw new Error("product not found");
+    }
+    
     // send notigication
     if (data.discountInPercent > 0) {
       const favorites = await Favorite.find({ products: id }, { userId: 1 })
       if (favorites) {
         const recipients = favorites.map(user => user.userId)
-        await notificationService.sendNotification(recipients, `product: ${id} is on sale`)
+        await notificationService.sendNotification(recipients, `${product.name} is on sale`)
       }
-    }
-
-    const product = await Product.findByIdAndUpdate(id, data, { new: true });
-
-    if (!product) {
-      throw new Error("product not found");
     }
 
     return product;

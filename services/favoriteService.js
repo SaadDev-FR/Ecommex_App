@@ -40,7 +40,7 @@ const getAllFavoriteByUserId = async (req, res, next) => {
 
     const favorite = await Favorite.findOne({ userId }).populate('products');
 
-    return favorite
+    return favorite?favorite:[]
 
   } catch (error) {
     throw new Error('Failed to retrieve Favorites: ' + error.message);
