@@ -2,6 +2,7 @@ const Order = require('../models/order');
 const { OrderStatus, PaymentStatus } = require('../utils/orderConstants');
 const { totalOrderAmount } = require('../utils/common')
 const { STRIPE_SECRET_KEY } = require('../utils/constants')
+const Product = require('../models/product');
 
 const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
@@ -11,7 +12,12 @@ const create = async (req, res, next) => {
   try {
     const data = req.body
 
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 9000) + 1000;
+    const orderNumber = `${timestamp}${random}`;
+
     data.status = OrderStatus.PENDING
+    data.orderNumber = orderNumber
     const total = await totalOrderAmount(req.body.products);
 
     if (data.totalAmount < total) {
@@ -33,9 +39,7 @@ const create = async (req, res, next) => {
       payment_method: paymentMethod.id,
       confirm: true,
       'automatic_payment_methods[enabled]': true,
-      'automatic_payment_methods[allow_redirects]':'never',
-
-      
+      'automatic_payment_methods[allow_redirects]': 'never',
     })
 
     // Check payment status
@@ -117,7 +121,7 @@ const changeOrderStatus = async (req, res, next) => {
     const id = req.params.id
     const status = req.body.status;
 
-    const order = await Order.findByIdAndUpdate(id, {status}, { new: true });
+    const order = await Order.findByIdAndUpdate(id, { status }, { new: true });
 
     return order;
 

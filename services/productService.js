@@ -5,6 +5,7 @@ const ProductReview = require('../models/productReview');
 const Favorite = require('../models/favorite');
 const notificationService = require('../services/notificationService');
 const Order = require('../models/order');
+const Seller = require('../models/seller');
 
 
 
@@ -22,6 +23,12 @@ const create = async (req, res, next) => {
     data.createdBy = req.user[keysContainingId];
 
     const products = await Product.create(data);
+
+    // send notigication
+      const users = await Seller.find({}, { _id: 1 })
+      if (users) {
+        await notificationService.sendNotification(users.map(user=>user.id), `${products.name} is on sale`)
+      }
 
     return products;
   } catch (error) {

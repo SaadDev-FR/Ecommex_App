@@ -13,6 +13,7 @@ const orderRoute = require('./routes/orderRoute');
 const notificationRoute = require('./routes/notificationRoute');
 const subscriptionPlanRoute = require('./routes/subscriptionPlanRoute');
 const subscriptionRoute = require('./routes/subscriptionRoute');
+const wholeSellerRoutes = require('./routes/wholeSellerRoutes');
 
 
 
@@ -59,6 +60,7 @@ app.use('/orders',orderRoute);
 app.use('/notification',notificationRoute);
 app.use('/subscription-plan',subscriptionPlanRoute);
 app.use('/subscription', subscriptionRoute)
+app.use('/whole-seller', wholeSellerRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
