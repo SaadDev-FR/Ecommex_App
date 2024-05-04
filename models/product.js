@@ -80,7 +80,6 @@ productSchema.post('find', async function (docs) {
                 Reviews.find({_id: {$in: product.reviews}}, { rating: 1 })
                     .then(reviews => {
                         reviews = reviews.map(item => item.rating);
-                        console.log('reviews::::::::::::::::', reviews);
                         const sum = reviews.reduce((total, rating) => total + rating, 0);
                         product.averageRating = sum / reviews.length;
                     })

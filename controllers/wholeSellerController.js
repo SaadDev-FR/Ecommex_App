@@ -10,8 +10,7 @@ const getAllOrders = async (req, res, next) => {
           success: true,
           message: 'Orders retrieved successfully.',
           total: result.orders?.length,
-          totalSales: result.totalSale,
-          Orders: result.orders
+          data: result
         });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });

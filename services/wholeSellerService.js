@@ -12,38 +12,41 @@ const getAllOrders = async (req, res, next) => {
 
         const query = { createdBy: req.user.wholeSellerId };
 
+        let days = [];
         switch (dateFilter) {
             case 'today':
                 const todayStart = new Date();
-                todayStart.setHours(0, 0, 0, 0); 
+                todayStart.setHours(0, 0, 0, 0);
 
                 query.createdAt = {
-                    $gte: todayStart, 
-                    $lte: new Date() 
+                    $gte: todayStart,
+                    $lte: new Date()
                 };
                 break;
 
             case 'weekly':
-                
+
                 const weekStart = new Date();
                 weekStart.setDate(weekStart.getDate() - 7);
-                weekStart.setHours(0, 0, 0, 0); 
+                weekStart.setHours(0, 0, 0, 0);
 
                 query.createdAt = {
-                    $gte: weekStart, 
-                    $lte: new Date() 
+                    $gte: weekStart,
+                    $lte: new Date()
                 };
+                days = get_last_n_days_date(7);
                 break;
 
             case 'monthly':
                 const startMonth = new Date();
-                startMonth.setDate(1);
-                startMonth.setHours(0, 0, 0, 0); 
+                startMonth.setDate(startMonth.getDate() -30);
+                startMonth.setHours(0, 0, 0, 0);
 
                 query.createdAt = {
-                    $gte: startMonth, 
-                    $lte: new Date() 
+                    $gte: startMonth,
+                    $lte: new Date()
                 };
+                days = get_last_n_days_date(30);
                 break;
 
             case 'custom':
@@ -55,8 +58,8 @@ const getAllOrders = async (req, res, next) => {
                     endDate.setHours(23, 59, 59, 999);
 
                     query.createdAt = {
-                        $gte: startDate, 
-                        $lte: endDate 
+                        $gte: startDate,
+                        $lte: endDate
                     };
                 }
                 break;
@@ -91,10 +94,43 @@ const getAllOrders = async (req, res, next) => {
 
         orders.totalSale = totalSale;
 
-        return { orders, totalSale }
+        const total_by_date = days.map(day => {
+            const order_stats = { date: day, total: 0 };
+            orders.forEach(order => {
+                const orderDate = new Date(order.createdAt);
+                const last_n_date = new Date(day);
+                if (
+                    orderDate.getDate() == last_n_date.getDate() &&
+                    orderDate.getMonth() == last_n_date.getMonth() &&
+                    orderDate.getFullYear() == last_n_date.getFullYear()
+                )
+                    order_stats.total += order.totalAmount
+            });
+
+            return order_stats
+
+        });
+
+        return { orders, totalSale, total_by_date}
     } catch (error) {
         throw new Error('Failed to retrieve Orders: ' + error.message);
     }
+}
+
+
+const get_last_n_days_date = (last_n_days = 7) => {
+    const dates = []
+    const today = new Date();
+
+    for (let i = 0; i < last_n_days; i++) {
+        const date = new Date()
+        date.setDate(today.getDate() - i)
+        dates.push(date);
+    }
+
+    dates.sort((a,b)=>a-b)
+
+    return dates;
 }
 
 
