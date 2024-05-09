@@ -10,7 +10,7 @@ const getAllOrders = async (req, res, next) => {
     try {
         const dateFilter = req.query.date_filter;
 
-        const query = { createdBy: req.user.wholeSellerId };
+        const query = { createdBy: req.user.wholeSellerId, createdAt: null };
 
         let days = [];
         switch (dateFilter) {
@@ -39,7 +39,7 @@ const getAllOrders = async (req, res, next) => {
 
             case 'monthly':
                 const startMonth = new Date();
-                startMonth.setDate(startMonth.getDate() -30);
+                startMonth.setDate(startMonth.getDate() - 30);
                 startMonth.setHours(0, 0, 0, 0);
 
                 query.createdAt = {
@@ -61,19 +61,39 @@ const getAllOrders = async (req, res, next) => {
                         $gte: startDate,
                         $lte: endDate
                     };
+                    days = get_last_n_days_date(days_difference(startDate));
                 }
+
+
                 break;
         }
 
 
-        const products = await Product.find({createdBy: query.createdBy});
+        const products = await Product.find({ createdBy: query.createdBy });
         const productIds = products.map(product => product.id)
 
-        const orders = await Order.find({ createdAt: query.createdAt, 'products.productId': { $in: productIds } })
-            .populate({
-                path: 'customer.customerId',
-                select: ['firstName', 'lastName']
-            }).populate('products.productId');
+        let orders = null;
+
+        if (query.createdAt) {
+
+            orders = await Order.find({ createdAt: query.createdAt, 'products.productId': { $in: productIds } })
+                .populate({
+                    path: 'customer.customerId',
+                    select: ['firstName', 'lastName']
+                }).populate('products.productId');
+        }
+        else {
+            orders = await Order.find({ 'products.productId': { $in: productIds } })
+                .populate({
+                    path: 'customer.customerId',
+                    select: ['firstName', 'lastName']
+                }).populate('products.productId').sort({ createdAt: 1 });
+
+            const start_date = new Date(orders[0].createdAt)
+           
+            days = get_last_n_days_date(days_difference(start_date));
+
+        }
 
 
         let totalSale = 0;
@@ -111,7 +131,7 @@ const getAllOrders = async (req, res, next) => {
 
         });
 
-        return { orders, totalSale, total_by_date}
+        return { orders, totalSale, total_by_date }
     } catch (error) {
         throw new Error('Failed to retrieve Orders: ' + error.message);
     }
@@ -128,9 +148,20 @@ const get_last_n_days_date = (last_n_days = 7) => {
         dates.push(date);
     }
 
-    dates.sort((a,b)=>a-b)
+    dates.sort((a, b) => a - b)
 
     return dates;
+}
+
+const days_difference = (start_date) => {
+
+    const end_date = new Date()
+
+    // Calculate the difference in milliseconds between the two dates
+    const differenceMs = end_date - start_date;
+
+    return Math.ceil(differenceMs / (1000 * 60 * 60 * 24));
+
 }
 
 
