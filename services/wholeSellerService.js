@@ -20,7 +20,7 @@ const getAllOrders = async (req, res, next) => {
 
                 query.createdAt = {
                     $gte: todayStart,
-                    $lte: new Date()
+                    $lte: new Date().setHours(23, 59, 59, 999)
                 };
                 break;
 
@@ -32,7 +32,7 @@ const getAllOrders = async (req, res, next) => {
 
                 query.createdAt = {
                     $gte: weekStart,
-                    $lte: new Date()
+                    $lte: new Date().setHours(23, 59, 59, 999)
                 };
                 days = get_last_n_days_date(7);
                 break;
@@ -44,7 +44,7 @@ const getAllOrders = async (req, res, next) => {
 
                 query.createdAt = {
                     $gte: startMonth,
-                    $lte: new Date()
+                    $lte: new Date().setHours(23, 59, 59, 999)
                 };
                 days = get_last_n_days_date(30);
                 break;
@@ -66,10 +66,10 @@ const getAllOrders = async (req, res, next) => {
         }
 
 
-        const products = await Product.find(query);
+        const products = await Product.find({createdBy: query.createdBy});
         const productIds = products.map(product => product.id)
 
-        const orders = await Order.find({ 'products.productId': { $in: productIds } })
+        const orders = await Order.find({ createdAt: query.createdAt, 'products.productId': { $in: productIds } })
             .populate({
                 path: 'customer.customerId',
                 select: ['firstName', 'lastName']
