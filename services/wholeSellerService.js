@@ -90,7 +90,7 @@ const getAllOrders = async (req, res, next) => {
                 }).populate('products.productId').sort({ createdAt: 1 });
 
             const start_date = new Date(orders[0].createdAt)
-           
+
             days = get_last_n_days_date(days_difference(start_date));
 
         }
@@ -103,8 +103,8 @@ const getAllOrders = async (req, res, next) => {
             order.products.forEach(product => {
 
                 if (product.productId) {
-                    totalAmount += product.productId.price.amount * product.quantity;
-                    totalSale += product.productId.price.amount * product.quantity
+                    totalAmount += product.price * product.quantity;
+                    totalSale += product.price * product.quantity
                 }
             });
 
